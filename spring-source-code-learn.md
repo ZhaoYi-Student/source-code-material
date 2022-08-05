@@ -71,6 +71,15 @@
 6. 初始化
 7. 从容器中获取
 
+#### Spring mvc 启动流程
+1. 启动tomcat执行web.xml文件
+2. 执行ContextLoaderListener中的contextInitialized方法进行spring容器的初始化
+3. 判断root是否为空，不为空抛出异常
+4. 判断context对象是否为空，为空创建默认的XmlWebApplicationContext
+5. 调用configureAndRefreshWebApplicationContext方法，判断id，加载spring相关配置文件，创建spring容器
+6. 将创建好的spring容器赋值给root对象
+7. 创建好DispatcherServlet对象根据servlet生命周期首先调用init的方法初始化springmvc，配置好九大内置对象
+8. 此时spring容器已经创建完成
 
 #### Spring mvc 九大内置对象
 1. HandlerMapper
