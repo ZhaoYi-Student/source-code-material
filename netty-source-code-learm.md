@@ -162,6 +162,18 @@ public class DiscardServerHandler extends SimpleChannelInboundHandler<Object> {
 
 ##### DiscardClient
 
+1. 根据系统变量获取SSl，默认没有
+2. 根据系统变量获取主机，默认127.0.0.1
+3. 根据系统变量获取端口号，默认8009
+4. 根据系统变量获取发送数据的大小，默认256
+5. 设置SSL
+6. 创建事件循环组
+7. 创建客户端启动器
+8. 初始化客户端通道
+9. 获取流水线对象
+10. 将自定义的客户端处理器放到流水线中
+11. 异步连接服务端
+12. 关闭事件循环组
 ```
 /**
  * Keeps sending random data to the specified address.
@@ -169,13 +181,18 @@ public class DiscardServerHandler extends SimpleChannelInboundHandler<Object> {
  */
 public final class DiscardClient {
 
+    // 根据系统变量获取SSl，默认没有
     static final boolean SSL = System.getProperty("ssl") != null;
+    // 根据系统变量获取主机，默认127.0.0.1
     static final String HOST = System.getProperty("host", "127.0.0.1");
+    // 根据系统变量获取端口号，默认8009
     static final int PORT = Integer.parseInt(System.getProperty("port", "8009"));
+    // 根据系统变量获取发送数据的大小，默认256
     static final int SIZE = Integer.parseInt(System.getProperty("size", "256"));
 
     public static void main(String[] args) throws Exception {
         // Configure SSL.
+        // 设置SSL
         final SslContext sslCtx;
         if (SSL) {
             sslCtx = SslContextBuilder.forClient()
@@ -184,28 +201,38 @@ public final class DiscardClient {
             sslCtx = null;
         }
 
+        // 创建事件循环组
         EventLoopGroup group = new NioEventLoopGroup();
         try {
+            // 创建客户端启动器
             Bootstrap b = new Bootstrap();
+            // 将事件循环组放到启动器中
             b.group(group)
+                    // 设置一个默认的socket通道
              .channel(NioSocketChannel.class)
              .handler(new ChannelInitializer<SocketChannel>() {
                  @Override
+                 // 初始化客户端通道
                  protected void initChannel(SocketChannel ch) throws Exception {
+                   // 获取流水线对象
                      ChannelPipeline p = ch.pipeline();
                      if (sslCtx != null) {
                          p.addLast(sslCtx.newHandler(ch.alloc(), HOST, PORT));
                      }
+                     // 将自定义的客户端处理器放到流水线中
                      p.addLast(new DiscardClientHandler());
                  }
              });
 
             // Make the connection attempt.
+            // 异步连接服务端
             ChannelFuture f = b.connect(HOST, PORT).sync();
 
             // Wait until the connection is closed.
+            // 等到socket连接关闭
             f.channel().closeFuture().sync();
         } finally {
+            // 关闭事件循环组
             group.shutdownGracefully();
         }
     }
@@ -221,51 +248,95 @@ public final class DiscardClient {
  */
 public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
+    // 内容字节缓冲区
     private ByteBuf content;
+    //
     private ChannelHandlerContext ctx;
 
+    /**
+     * 当通道激活的时候回调该方法
+     * @param ctx
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         this.ctx = ctx;
 
         // Initialize the message.
-        content = ctx.alloc().directBuffer(DiscardClient.SIZE).writeZero(DiscardClient.SIZE);
+        // 初始化消息
+        content = ctx
+                .alloc() // 分配缓冲区
+                .directBuffer(DiscardClient.SIZE) // 设置缓冲区大小 大小为 DiscardClient.SIZE
+                .writeZero(DiscardClient.SIZE); // 向缓冲写入 0 byte，大小为 DiscardClient.SIZE
 
         // Send the initial messages.
+        // 发送初始化后的数据
         generateTraffic();
     }
 
+    /**
+     * 当通道变为不活跃的时候回调该方法
+     * @param ctx
+     */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        content.release();
+        content.release(); // 释放分配的缓冲区对象
     }
 
+    /**
+     * 当读取到服务端发送的数据时调用
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler}
+     *                      belongs to
+     * @param msg           the message to handle
+     * @throws Exception
+     */
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         // Server is supposed to send nothing, but if it sends something, discard it.
+        // server 应该什么也不发送。 但如果发送了什么，丢弃它，直到连接关闭
     }
 
+    /**
+     * 当发生了异常时回调该方法
+     * @param ctx
+     * @param cause
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // Close the connection when an exception is raised.
+        // 当发生任何异常时，关闭连接
         cause.printStackTrace();
         ctx.close();
     }
 
+    /**
+     * 计数器
+     */
     long counter;
 
+    /**
+     * 生成传输数据
+     */
     private void generateTraffic() {
         // Flush the outbound buffer to the socket.
+        // 将出站缓冲区刷新到套接字
         // Once flushed, generate the same amount of traffic again.
-        ctx.writeAndFlush(content.retainedDuplicate()).addListener(trafficGenerator);
+        // 刷新后，再次生成相同数量的流量。
+        ctx.writeAndFlush(content.retainedDuplicate()) // 将数据写入到socket中并且刷出到服务端
+                .addListener(trafficGenerator); // 添加监听器对象
     }
 
+    /**
+     * 监听器对象，用于监听ChannelHandlerContext上下文操作
+     */
     private final ChannelFutureListener trafficGenerator = new ChannelFutureListener() {
+        // 当操作完成时，将会调用该方法
         @Override
         public void operationComplete(ChannelFuture future) {
             if (future.isSuccess()) {
+                // 如果future已经完成，那么生成新的数据
                 generateTraffic();
             } else {
+                // 异常完成，打印异常信息，关闭通道
                 future.cause().printStackTrace();
                 future.channel().close();
             }
