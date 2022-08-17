@@ -74,7 +74,7 @@
 
 ​		想要合理设置此参数的值必须要清楚的知道binlog的写盘的流程：
 
-​		![](image\sync_binlog.png)
+​		![](image/sync_binlog.png)
 
 ​		可以看到，每个线程有自己的binlog cache，但是共用同一份binlog。
 
@@ -102,7 +102,7 @@
 
 ​		在mysql5.6版本之后引入了一个概念，就是我们通常说的并行复制，如下图：
 
-![image-20200715210204654](image\并行复制.png)
+![image-20200715210204654](image/并行复制.png)
 
 ​		通过上图我们可以发现其实所谓的并行复制，就是在中间添加了一个分发的环节，也就是说原来的sql_thread变成了现在的coordinator组件，当日志来了之后，coordinator负责读取日志信息以及分发事务，真正的日志执行的过程是放在了worker线程上，由多个线程并行的去执行。
 
@@ -181,11 +181,11 @@ show full processlist;
 
 ​		我们真正想要达到的并行复制应该是如下的状态，也就是说当第一组事务提交的是，下一组事务是运行的状态，当第一组事务提交完成之后，下一组事务会立刻变成commit状态。
 
-![img](image\mariaDB1.png)
+![img](image/mariaDB1.png)
 
 ​		但是按照mariaDB的并行复制策略，那么备库上的执行状态会变成如下所示：
 
-![img](image\mariaDB2.png)
+![img](image/mariaDB2.png)
 
 ​		可以看到，这张图跟上面这张图的最大区别在于，备库上执行的时候必须要等第一组事务执行完成之后，第二组事务才能开始执行，这样系统的吞吐量就不够了。而且这个方案很容易被大事务拖后腿，如果trx2是一个大事务，那么在备库应用的时候，trx1和trx3执行完成之后，就只能等trx2完全执行完成，下一组才能开始执行，这段时间，只有一个worker线程在工作，是对资源的浪费。
 
@@ -203,7 +203,7 @@ show full processlist;
 
 ​		在mariaDB中，所有处于commit状态的事务是可以并行，因为如果能commit的话就说明已经没有锁的问题，但是大家回想下，我们mysql的日志提交是两阶段提交，如下图，其实只要处于prepare状态就已经表示没有锁的问题了。
 
-![](F:\lian\mycat\image\两阶段提交.png)
+![](image/两阶段提交.png)
 
 ​		因此，mysql5.7的并行复制策略的思想是：
 
@@ -257,17 +257,17 @@ change master to master_host='192.168.85.111',master_user='root',master_password
 show binlog events in 'lian-bin.000001';
 ```
 
-![image-20200724221610397](F:\lian\mycat\image\gtid.png)
+![image-20200724221610397](image/gtid.png)
 
 previous_gtids:用于表示上一个binlog最后一个gtid的位置，每个binlog只有一个。
 
 gtid:当开启gtid的时候，每一个操作语句执行前会添加一个gtid事件，记录当前全局事务id，组提交信息被保存在gtid事件中，有两个关键字段，last_committed,sequence_number用来标识组提交信息。
 
-![image-20200724222034179](F:\lian\mycat\image\gtid2.png)
+![image-20200724222034179](image/gtid2.png)
 
 上述日志看起来可能比较麻烦，可以使用如下命令执行：
 
-![image-20200724222128641](F:\lian\mycat\image\gtid3.png)
+![image-20200724222128641](image/gtid3.png)
 
 其中last_committed表示事务提交的时候，上次事务提交的编号，如果事务具有相同的last_committed值表示事务就在一个组内，在备库执行的时候可以并行执行。同时大家还要注意，每个last_committed的值都是上一个组事务的sequence_number值。
 
@@ -350,4 +350,3 @@ public class ConCurrentInsert  extends Thread{
 }
 
 ```
-

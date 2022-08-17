@@ -45,13 +45,13 @@ export PATH=$MYCAT_HOME/bin:$PATH:$JAVA_HOME/bin
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- - - Licensed under the Apache License, Version 2.0 (the "License"); 
-	- you may not use this file except in compliance with the License. - You 
-	may obtain a copy of the License at - - http://www.apache.org/licenses/LICENSE-2.0 
-	- - Unless required by applicable law or agreed to in writing, software - 
-	distributed under the License is distributed on an "AS IS" BASIS, - WITHOUT 
-	WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. - See the 
-	License for the specific language governing permissions and - limitations 
+<!-- - - Licensed under the Apache License, Version 2.0 (the "License");
+	- you may not use this file except in compliance with the License. - You
+	may obtain a copy of the License at - - http://www.apache.org/licenses/LICENSE-2.0
+	- - Unless required by applicable law or agreed to in writing, software -
+	distributed under the License is distributed on an "AS IS" BASIS, - WITHOUT
+	WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. - See the
+	License for the specific language governing permissions and - limitations
 	under the License. -->
 <!DOCTYPE mycat:server SYSTEM "server.dtd">
 <mycat:server xmlns:mycat="http://io.mycat/">
@@ -119,7 +119,7 @@ mysql -uroot -p123456 -P8066 -h 192.168.85.111
 
 ​		通过mycat和mysql的主从复制配合搭建数据库的读写分离，可以实现mysql的高可用性，下面我们来搭建mysql的读写分离。
 
-#### 1、一主一从(主从复制的原理之前讲解过了，需要的同学自行参阅文档)	
+#### 1、一主一从(主从复制的原理之前讲解过了，需要的同学自行参阅文档)
 
 1、在node01上修改/etc/my.cnf的文件
 
@@ -227,7 +227,7 @@ select * from mytbl;
 
 ​		3、balance=2:所有读操作都随机的在writehost，readhost上分发
 
-​		4、balance=3:所有读请求随机的分发到readhost执行，writehost不负担读压力 
+​		4、balance=3:所有读请求随机的分发到readhost执行，writehost不负担读压力
 
 ​		当了解了这个参数的含义之后，我们可以将此参数设置为2，就能够看到在两个主机上切换执行了。
 
@@ -237,9 +237,9 @@ select * from mytbl;
 
 ​		架构图如下所示：
 
-​		![image-20200527000020514](E:\lian\mycat\image\双主双从.png)		在此架构中，可以让一台主机用来处理所有写请求，此时，它的从机和备机，以及备机的从机复制所有读请求，当主机宕机之后，另一台主机负责写请求，两台主机互为备机。
+​		![image-20200527000020514](E:\lian\mycat\image/双主双从.png)		在此架构中，可以让一台主机用来处理所有写请求，此时，它的从机和备机，以及备机的从机复制所有读请求，当主机宕机之后，另一台主机负责写请求，两台主机互为备机。
 
-​		主机分布如下：	
+​		主机分布如下：
 
 | 编号 | 角色    | ip             | 主机名 |
 | ---- | ------- | -------------- | ------ |
@@ -417,7 +417,7 @@ insert into mytbl values(1,'zhangsan');
 </mycat:schema>
 ```
 
-​		下面开始进行读写分离的验证	
+​		下面开始进行读写分离的验证
 
 ```sql
 --插入以下语句，使数据不一致
@@ -451,7 +451,7 @@ service mysqld start
 
 ​		一个数据库由很多表的构成，每个表对应着不同的业务，垂直切分是指按照业务将表进行分类，分布到不同的数据库上面，这样也就将数据或者压力分担到不同的库上面。
 
-![image-20200527164536658](image\垂直切分.png)
+![image-20200527164536658](image/垂直切分.png)
 
 ​		如上图所示，一个系统被切分成了用户系统、订单交易、支付系统等多个库。
 
@@ -481,7 +481,7 @@ service mysqld start
 
 ​		相对于垂直拆分，水平拆分不是将表做分类，而是按照某个字段的某种规则来分散到多个库中，每个表中包含一部分数据。简单来说，我们可以将数据的水平切分理解为是按照数据行切分，就是将表中的某些行切分到一个数据库，而另外的某些行又切分到其他的数据库中，
 
-​		![image-20200527170709629](image\水平切分.png)
+​		![image-20200527170709629](image/水平切分.png)
 
 ​		拆分数据就需要定义分片规则。关系型数据库是行列的二维模型，拆分的第一原则是找到拆分维度。比如从会员的角度来分析，商户订单交易类系统中查询会员某天某月某个订单，那么就需要按照会员结合日期来拆分，不同的数据按照会员id做分组，这样所有的数据查询join都会在单库内解决；如果从商户的角度来讲，要查询某个商家某天所有的订单数，就需要按照商户id做拆分；但是如果系统既想按照会员拆分，又想按照商家数据拆分，就会有一定的困难，需要综合考虑找到合适的分片。
 
@@ -495,7 +495,7 @@ service mysqld start
 
 ​		如图，切分原则都是根据业务找到适合的切分规则分散到不同的库，下图是用用户id求模的案例：
 
-![image-20200527171813755](image\数据切分案例.png)
+![image-20200527171813755](image/数据切分案例.png)
 
 ​		数据做完了水平拆分之后也是有优缺点的。
 
@@ -559,7 +559,7 @@ service mysqld start
 
 ​		schema.xml作为mycat中重要地配置文件之一，管理者mycat的逻辑库、表、分片规则、DataNode以及DataSource。
 
-##### 		1、schema标签	
+##### 		1、schema标签
 
 ```xml
 <schema name="TESTDB" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn1"></schema>
@@ -756,7 +756,7 @@ password="123456">
 
 ​		algorithm使用function标签中的那么属性，连接表规则和具体路由算法。当然，多个表规则可以连接到同一个路由算法上。
 
-##### 		2、function	
+##### 		2、function
 
 ```xml
 <function name="hash-int" class="io.mycat.route.function.PartitionByFileMap">

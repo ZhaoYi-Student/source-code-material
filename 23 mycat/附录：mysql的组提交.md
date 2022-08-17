@@ -10,7 +10,7 @@
 
 ​		假设现在有三个并发事务（tx1,tx2,tx3）,这三个事务所对应的LSN的值分别是50,120,160。
 
-![img](F:\lian\mycat\image\组提交.png)
+![](image/组提交.png)
 
 ​		从图中可以看到：
 
@@ -37,6 +37,3 @@ https://mp.weixin.qq.com/s/_LK8bdHPw9bZ9W1b3i5UZA
 ​		binlog_group_commit_sync_delay 参数，表示延迟多少微秒后才调用fsync;
 
 ​		binlog_group_commit_sync_no_delay_count 参数，表示累积多少次以后才调用 fsync。
-
-
-

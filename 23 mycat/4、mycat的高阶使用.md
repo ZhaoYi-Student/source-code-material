@@ -8,7 +8,7 @@
 
 ​		HAproxy实现了mycat多借点的集群高可用和负载均衡，而HAProxy自身的高可用则可以通过Keepalived来实现。
 
-![image-20200626204106407](F:\lian\mycat\image\mycat高可用.png)
+![](image/mycat高可用.png)
 
 ​		好了，如果这个图大家看明白的话，下面我们开始规划集群并进行实操。
 
@@ -106,7 +106,7 @@ frontend admin_stats
 7、修改配置文件
 	cd etc/keepalived/
 	vi keepalived.conf
-	
+
 	! Configuration File for keepalived
 
 global_defs {
@@ -328,7 +328,7 @@ vrrp_instance VI_1 {
 
 ​		1、通信协议模块
 
-​		通信协议模块承担底层的收发数据、现成回调处理工作，主要采用Reactor、Proactor模式来提高效率。目前。mycat通信模块默认采用Reactor模式，在协议层采用mysql协议。 
+​		通信协议模块承担底层的收发数据、现成回调处理工作，主要采用Reactor、Proactor模式来提高效率。目前。mycat通信模块默认采用Reactor模式，在协议层采用mysql协议。
 
 ​		2、路由解析模块
 
@@ -358,10 +358,10 @@ vrrp_instance VI_1 {
 
 ​		后端数据库返回数据，通过协议解析后发送至回调模块。如果是涉及多节点的数据，则执行流程将会先进入结果集汇聚、排序等模块中，然后将处理后的数据通过通信协议模块返回到客户端。
 
-![image-20200705150407895](F:\lian\mycat\image\mycat流程.png)
+![](image/mycat流程.png)
 
 ​		通过上述图片大家发现了，在mycat的执行流程中，AIO、NIO、多线程、内存管理等各个方面都用到了，大家如果想看mycat的源码的话，最好能具备以上的基础，在咱们这套课程中就不在讲解源码了，mycat的源码在面试过程中也几乎不会用到，如果大家有兴趣的话，可以自行学习。
 
-#### 
+####
 
 ​		

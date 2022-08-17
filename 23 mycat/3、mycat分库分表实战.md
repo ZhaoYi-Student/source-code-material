@@ -7,13 +7,13 @@
 ​		数据文件
 
 ```sql
---客户表 
+--客户表
 CREATE TABLE customer(
 id INT AUTO_INCREMENT,
 NAME VARCHAR(200),
 PRIMARY KEY(id)
 );
---订单表 
+--订单表
     CREATE TABLE orders(
     id INT AUTO_INCREMENT,
     order_type INT,
@@ -21,14 +21,14 @@ PRIMARY KEY(id)
     amount DECIMAL(10,2),
     PRIMARY KEY(id)
         );
---订单详细表 
+--订单详细表
 CREATE TABLE orders_detail(
 id INT AUTO_INCREMENT,
 detail VARCHAR(2000),
 order_id INT,
 PRIMARY KEY(id)
 );
---订单状态字典表 
+--订单状态字典表
 CREATE TABLE dict_order_type(
 id INT AUTO_INCREMENT,
 order_type VARCHAR(200),
@@ -757,7 +757,7 @@ insert into user5(id,name) values(1111111,database());
 insert into user5(id,name) values(2222222,database());
 insert into user5(id,name) values(3333333,database());
 insert into user5(id,name) values(4444444,database());
-insert into user5(id,name) values(8960000,database());	
+insert into user5(id,name) values(8960000,database());
 ```
 
 #### 		10、按照日期范围分片		
@@ -815,7 +815,7 @@ INSERT INTO login_info(id,user_id,login_date) VALUES (5,103,'2020-06-05');
 INSERT INTO login_info(id,user_id,login_date) VALUES (6,104,'2020-06-06');
 ```
 
-#### 	11、按单月小时分片	
+#### 	11、按单月小时分片
 
 ​		此规则是单月内按照小时拆分，最小粒度是小时，可以一天最多24个分片，最少一个分片，一个月完成后下个月开始循环，每个月月尾，需要手工清理数据。
 
@@ -1411,7 +1411,7 @@ DATAACENTERID=06  #任意整数
 
 ```sql
 create table test2(id bigint auto_increment primary key,xm varchar(32));
-insert into test2(id,xm) values(next value for MYCATSEQ_GLOBAL，'lisi') ; 
+insert into test2(id,xm) values(next value for MYCATSEQ_GLOBAL，'lisi') ;
 ```
 
 ​		此方式的优点是配置简单，但是缺点也很明显就是18位的id太长，需要耗费多余的存储空间。
